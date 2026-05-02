@@ -10,7 +10,9 @@ type ReplyInput = {
 
 export async function generateAIReply(input: ReplyInput) {
   const systemPrompt = buildSalesPrompt(input);
-
+  if (!process.env.OPENROUTER_API_KEY) {
+    return "OPENROUTER_API_KEY não está configurada no servidor";
+  }
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -20,7 +22,7 @@ export async function generateAIReply(input: ReplyInput) {
       "X-Title": "ChatLead AI",
     },
     body: JSON.stringify({
-      model: "openrouter/auto",
+      model: "openai/gpt-4o-mini",
       temperature: 0.7,
       max_tokens: 160,
       messages: [

@@ -1,4 +1,3 @@
-import OpenAI from "openai";
 import { buildSalesPrompt } from "./ai-personality";
 
 type ReplyInput = {
@@ -10,20 +9,36 @@ type ReplyInput = {
 };
 
 export async function generateAIReply(input: ReplyInput) {
-  const client = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
   const systemPrompt = buildSalesPrompt(input);
 
-  const completion = await client.chat.completions.create({
-    model: "gpt-4.1-mini",
-    temperature: 0.7,
-    max_tokens: 160,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: input.userMessage },
-    ],
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+      "Content-Type": "application/json",
+      "HTTP-Referer": "https://zapflow-ai-chi.vercel.app",
+      "X-Title": "ChatLead AI",
+    },
+    body: JSON.stringify({
+      model: "openrouter/auto",
+      temperature: 0.7,
+      max_tokens: 160,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: input.userMessage },
+      ],
+    }),
   });
 
-  return completion.choices[0]?.message?.content?.trim() ?? "Posso te ajudar com mais detalhes?";
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error("OpenRouter error:", data);
+    return `Erro OpenRouter: ${data?.error?.message ?? response.status}`;
+  }
+
+  return (
+    data.choices?.[0]?.message?.content?.trim() ??
+    "Posso te ajudar com mais detalhes?"
+  );
 }

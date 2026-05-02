@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { generateAIReply } from "@/lib/openai";
-
+import { createAdminClient } from "../../../../lib/supabase/admin";
+import { generateAIReply } from "../../../../lib/openai";
 type Payload = {
   companyId: string;
   contactName: string;

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { addService, logout, updateAISettings } from "@/app/dashboard/actions";
+import { createClient } from "../../lib/supabase/server";
+import { addService, logout, updateAISettings } from "./actions";
 import {
   Bot,
   Building2,
@@ -383,7 +383,6 @@ export default async function DashboardPage() {
 >
   Atualizar IA e publicar atendimento
 </button>
-                
               </form>
             </div>
           </article>

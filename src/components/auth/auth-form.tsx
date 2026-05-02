@@ -43,7 +43,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <div className="mx-auto w-full max-w-md px-6 py-14">
       <div className="glass rounded-2xl border border-white/10 p-7">
-        <h1 className="text-2xl font-semibold">{isLogin ? "Entrar no ZapFlow AI" : "Criar conta"}</h1>
+        <h1 className="text-2xl font-semibold">{isLogin ? "Entrar no ChatLead AI" : "Criar conta"}</h1>
         <p className="mt-2 text-sm text-muted">
           {isLogin ? "Acesse seu painel de atendimento." : "Comece sua automacao em minutos."}
         </p>

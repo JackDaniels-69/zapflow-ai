@@ -13,9 +13,28 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ZapFlow AI | Atendimento Inteligente para WhatsApp",
+  title: "ChatLead AI | IA Premium para Conversao de Leads no WhatsApp",
   description:
-    "Automatize respostas no WhatsApp com IA que converte clientes em vendas e agendamentos.",
+    "Gere e converta leads no WhatsApp com IA premium, respostas humanas e automacao focada em agendamentos.",
+  keywords: [
+    "chatlead ai",
+    "ia para whatsapp",
+    "automacao whatsapp",
+    "conversao de leads",
+    "atendimento com ia",
+    "saas de atendimento",
+  ],
+  openGraph: {
+    title: "ChatLead AI | IA Premium para Conversao de Leads",
+    description:
+      "A plataforma de IA para transformar conversas de WhatsApp em leads qualificados, vendas e agendamentos.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ChatLead AI",
+    description: "IA premium para gerar e converter leads via WhatsApp.",
+  },
 };
 
 export default function RootLayout({

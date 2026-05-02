@@ -1,6 +1,6 @@
-# ZapFlow AI
+# ChatLead AI
 
-SaaS fullstack para atendimento automatico no WhatsApp com IA.
+SaaS fullstack premium de IA para geracao e conversao de leads via WhatsApp.
 
 ## Stack
 
@@ -16,7 +16,7 @@ SaaS fullstack para atendimento automatico no WhatsApp com IA.
 - Login, registro e logout com Supabase Auth
 - Dashboard com cadastro de servicos, configuracao de IA e visualizacao de mensagens
 - Endpoint para processar mensagem e responder com OpenAI
-- Prompt de personalidade focado em respostas curtas e conversao
+- Prompt de personalidade focado em respostas curtas, humanas e orientadas a fechamento
 
 ## Setup
 

@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { buildSalesPrompt } from "@/lib/ai-personality";
+import { buildSalesPrompt } from "./ai-personality";
 
 type ReplyInput = {
   userMessage: string;

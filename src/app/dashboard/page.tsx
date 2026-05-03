@@ -248,7 +248,7 @@ export default async function DashboardPage() {
           </div>
         </header>
 
-        <DemoMode />
+        <DemoMode companyId={companyData?.id ?? ""} />
 
         <section id="visao-geral" className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <article className="glass rounded-2xl border border-white/10 p-4">

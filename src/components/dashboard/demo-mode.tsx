@@ -51,7 +51,7 @@
     },
   ];
 
-  export function DemoMode() {
+  export function DemoMode({ companyId }: { companyId: string }) {
     const [input, setInput] = useState("");
     const [aiStatus, setAiStatus] = useState("offline");
     const [messages, setMessages] = useState<any[]>([]);
@@ -66,12 +66,13 @@
       
         setLoading(true);
       
-        const res = await fetch("/api/chat", {
+        const res = await fetch("/api/ai/reply", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
+            companyId,
             message: input,
           }),
         });

@@ -1,7 +1,9 @@
 import { buildSalesPrompt } from "./ai-personality";
+import { createClient } from "./supabase/server";
 
 type ReplyInput = {
   userMessage: string;
+  companyId: string;
   companyName: string;
   services: Array<{ name: string; price: number; duration_minutes: number }>;
   businessHours: string;
@@ -9,10 +11,31 @@ type ReplyInput = {
 };
 
 export async function generateAIReply(input: ReplyInput) {
-  const systemPrompt = buildSalesPrompt(input);
+  const supabase = await createClient();
+
   if (!process.env.OPENROUTER_API_KEY) {
     return "OPENROUTER_API_KEY não está configurada no servidor";
   }
+
+  // 🔥 BUSCAR HISTÓRICO (MEMÓRIA)
+  const { data: history } = await supabase
+    .from("conversation_messages")
+    .select("role, content")
+    .eq("company_id", input.companyId)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  const systemPrompt = buildSalesPrompt(input);
+
+  const messages = [
+    { role: "system", content: systemPrompt },
+
+    // histórico antigo → novo
+    ...(history ?? []).reverse(),
+
+    { role: "user", content: input.userMessage },
+  ];
+
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -23,12 +46,9 @@ export async function generateAIReply(input: ReplyInput) {
     },
     body: JSON.stringify({
       model: "openai/gpt-4o-mini",
-      temperature: 0.7,
-      max_tokens: 160,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: input.userMessage },
-      ],
+      temperature: 0.4,
+      max_tokens: 140,
+      messages,
     }),
   });
 
@@ -39,8 +59,23 @@ export async function generateAIReply(input: ReplyInput) {
     return `Erro OpenRouter: ${data?.error?.message ?? response.status}`;
   }
 
-  return (
+  const reply =
     data.choices?.[0]?.message?.content?.trim() ??
-    "Posso te ajudar com mais detalhes?"
-  );
+    "Posso te ajudar com mais detalhes?";
+
+  // 🔥 SALVAR HISTÓRICO
+  await supabase.from("conversation_messages").insert([
+    {
+      company_id: input.companyId,
+      role: "user",
+      content: input.userMessage,
+    },
+    {
+      company_id: input.companyId,
+      role: "assistant",
+      content: reply,
+    },
+  ]);
+
+  return reply;
 }

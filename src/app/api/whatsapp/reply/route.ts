@@ -39,6 +39,7 @@ export async function POST(request: Request) {
   }
 
   const aiReply = await generateAIReply({
+    companyId: company.id,
     userMessage: body.message,
     companyName: company.name,
     services: services ?? [],

@@ -1,3 +1,4 @@
+import RealChat from "../../components/chat/real-chat";
 import { redirect } from "next/navigation";
 import { createClient } from "../../lib/supabase/server";
 import { addService, logout, updateAISettings } from "./actions";
@@ -449,6 +450,9 @@ export default async function DashboardPage() {
         <p className="px-1 text-xs text-muted">
           Conta: {user.email} | Empresa: {companyData?.name ?? "Nao cadastrada"}
         </p>
+        <div className="mt-6">
+  <RealChat companyId={companyData?.id ?? ""} />
+</div>
       </section>
     </main>
   );

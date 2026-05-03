@@ -1,5 +1,5 @@
 import { buildSalesPrompt } from "./ai-personality";
-import { createClient } from "./supabase/server";
+import { createAdminClient } from "./supabase/admin";
 
 type ReplyInput = {
   userMessage: string;
@@ -10,14 +10,15 @@ type ReplyInput = {
   personalityPrompt: string;
 };
 
-export async function generateAIReply(input: ReplyInput) {
-  const supabase = await createClient();
-
+export async function generateAIReply(input: ReplyInput): Promise<string> {
   if (!process.env.OPENROUTER_API_KEY) {
     return "OPENROUTER_API_KEY não está configurada no servidor";
   }
 
-  // 🔥 BUSCAR HISTÓRICO (MEMÓRIA)
+  // Usa adminClient — funciona em API routes sem contexto de cookies
+  const supabase = createAdminClient();
+
+  // 1. Buscar histórico recente (últimas 10 mensagens, ordem cronológica)
   const { data: history } = await supabase
     .from("conversation_messages")
     .select("role, content")
@@ -25,15 +26,24 @@ export async function generateAIReply(input: ReplyInput) {
     .order("created_at", { ascending: false })
     .limit(10);
 
+  const conversationHistory = (history ?? []).reverse() as {
+    role: "user" | "assistant";
+    content: string;
+  }[];
+
   const systemPrompt = buildSalesPrompt(input);
 
+  // Instrução anti-loop adicionada ao system prompt
+  const antiLoopInstruction = `
+REGRA CRITICA: Nunca repita informacoes que ja foram ditas na conversa.
+Se o cliente ja foi informado de preco, horario ou servico, nao repita — avance para o proximo passo.
+Seja natural, humano e nao entre em loop.
+`.trim();
+
   const messages = [
-    { role: "system", content: systemPrompt },
-
-    // histórico antigo → novo
-    ...(history ?? []).reverse(),
-
-    { role: "user", content: input.userMessage },
+    { role: "system" as const, content: `${systemPrompt}\n\n${antiLoopInstruction}` },
+    ...conversationHistory,
+    { role: "user" as const, content: input.userMessage },
   ];
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -41,7 +51,7 @@ export async function generateAIReply(input: ReplyInput) {
     headers: {
       Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
       "Content-Type": "application/json",
-      "HTTP-Referer": "https://zapflow-ai-chi.vercel.app",
+      "HTTP-Referer": process.env.NEXT_PUBLIC_APP_URL ?? "https://zapflow-ai-chi.vercel.app",
       "X-Title": "ChatLead AI",
     },
     body: JSON.stringify({
@@ -55,15 +65,14 @@ export async function generateAIReply(input: ReplyInput) {
   const data = await response.json();
 
   if (!response.ok) {
-    console.error("OpenRouter error:", data);
+    console.error("OpenRouter error:", JSON.stringify(data));
     return `Erro OpenRouter: ${data?.error?.message ?? response.status}`;
   }
 
   const reply =
-    data.choices?.[0]?.message?.content?.trim() ??
-    "Posso te ajudar com mais detalhes?";
+    data.choices?.[0]?.message?.content?.trim() ?? "Posso te ajudar com mais detalhes?";
 
-  // 🔥 SALVAR HISTÓRICO
+  // 2. Salvar mensagem do usuário e resposta da IA no histórico
   await supabase.from("conversation_messages").insert([
     {
       company_id: input.companyId,
